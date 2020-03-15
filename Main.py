@@ -45,46 +45,40 @@ plt.show()
 #%% Do prediction
 
 
-#from sklearn.linear_model import LogisticRegression
-#from sklearn.linear_model import LinearRegression
-#from sklearn.metrics import classification_report, confusion_matrix
-
+# print(UniqueCountries) # see all countries available
 Country = 'Mainland China'
+
+# Filter and rename some data
 Predict = Stats.xs(Country,level=1, drop_level=True)
 Predict = Predict.rename(columns={'Confirmed':'y'})
 Predict['ds'] = Predict.index - Predict.index[0]
 
-#model = LinearRegression()
-#model.fit(np.array(Predict['ds']).reshape(-1, 1), np.array(Predict['y']))
 
-#print('Model Score: ', model.score(np.array(Predict['ds']).reshape(-1, 1), np.array(Predict['y'])))
-
-
-DataDays = 1
+DataDays = 1 #Filter n number of days. default to 1, which uses the last data available
 Dates = Predict.index[:-DataDays]
 XData = np.array(Predict['ds'].dt.days)[:-DataDays] 
 YData = np.array(Predict['y'])[:-DataDays]
 
+# Define the modified sigmoid function
 def fsigmoid(x, a, b, c):
     return c / (1.0 + np.exp(-a*(x-b)))
 
-p0 = [ 0.2, 8, 7]
+p0 = [ 0.2, 8, 7] # Set some initial guess for the coefficients
 popt, pcov = curve_fit(fsigmoid, XData, YData, p0, method= 'trf', bounds=((0.18,1,0),(0.6,50,100000)))
 residuals = YData- fsigmoid(XData, *popt)
-ss_res = np.sum(residuals**2)
+ss_res = np.sum(residuals**2) # Calculate R² 
+print('R²: ' + ss_res)
 
-print(popt)
+ModelPredict = fsigmoid(XData, *popt) # Calculate the current data fit
 
-ModelPredict = fsigmoid(XData, *popt)
-
+# Create future days to predict
 Futuredays = np.arange(XData[-1],XData[-1] + 60,1)
-
 FuturePredic = fsigmoid(Futuredays, *popt)
 
 FutureDates = []
 for Day in Futuredays:
     FutureDates.append(Dates[0] + pd.Timedelta(Day, unit='d'))
-
+#%% Plot the prediction
 plt.Figure(figsize=[16,12])
 plt.plot(Dates, YData, linestyle = '-')
 plt.plot(Dates,ModelPredict, linestyle = '-')
