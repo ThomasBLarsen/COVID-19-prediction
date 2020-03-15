@@ -12,6 +12,6 @@ The analysis does the following:
 The library depends on Pandas, Numpy, Scipy and Matplotlib
 They can be installed by running 
 
-'''pip3 install pandas numpy scipy matplotlib'''
+```pip3 install pandas numpy scipy matplotlib```
 
 Before you run the script, replace the "folder" variable with the path to the directory where you downloaded the dataser.
